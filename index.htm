@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Number Game</title>
+        <style>
+            table { border-collapse: collapse; margin: 10px 0; margin: auto; }
+            td { width: 100px; height: 100px; border: 1px solid #333; 
+                 font: bold 2em Arial; text-align: center; cursor: pointer; }
+            h1 { text-align: center; }
+            button { display: block; margin: 20px auto; padding: 10px 20px; font-size: 1.2em; }
+        </style>
+    </head>
+    <body>
+        <button id="startButton">Start Game</button>
+        <h1 id="h1">15</h1>
+        <table id="oyun"></table>
+        <audio id="backgroundMusic" src="./music/Super Mario Bros. Theme Song.mp3" loop></audio>
+        <audio id="gameOversound" src="./music/Game Over sound effect.mp3"></audio>
+        <audio id="victory" src="./music/Victory Music - Sound Effect for editing.mp3"></audio>
+        <audio id="jump" src="./music/Mario Jump - Sound Effect (HD).mp3" preload="auto"></audio>
+        <script>
+            const oyun = document.getElementById('oyun')
+            const h1 = document.getElementById('h1')
+            const startButton = document.getElementById('startButton')
+            const backgroundMusic = document.getElementById('backgroundMusic')
+            const victoryMusic = document.getElementById('victory')
+            const jumpSound = document.getElementById('jump')
+            let arr = []
+            let kod = ''
+            let sira = 1
+            let count = 15
+            let timer = null
+            let gameStarted = false
+
+            for (let i = 1; i <= 16; i++) arr.push(i)
+
+            for (let i = 1; i <= 4; i++) {
+                kod += '<tr>'
+                for (let j = 1; j <= 4; j++) {
+                    let x = rnd(0, arr.length - 1)
+                    kod += `<td onclick="boz(this); playJumpSound()" data-number="${arr[x]}">${arr[x]}</td>`
+                    arr.splice(x, 1)
+                }
+                kod += '</tr>'
+            }
+            oyun.innerHTML = kod
+
+            startButton.addEventListener('click', () => {
+                if (!gameStarted) {
+                    timer = setInterval(counter, 1000)
+                    gameStarted = true
+                    backgroundMusic.play()
+                    startButton.disabled = true
+                }
+            })
+
+            function counter() {
+                h1.innerHTML = count--
+                if (count < 0) gameOver(false)
+            }
+
+            function boz(cell) {
+                if (!gameStarted) return 
+                if (parseInt(cell.dataset.number) === sira) {
+                    cell.style.background = '#eee'
+                    cell.style.color = '#aaa'
+                    sira++
+                }
+                if (sira > 16) gameOver(true)
+            }
+
+            function gameOver(res) {
+                clearInterval(timer)
+                gameStarted = false
+                h1.innerHTML = res ? 'You Won &#128525;' : 'Game Over  &#128557;'
+                backgroundMusic.pause()
+                backgroundMusic.currentTime = 0; // Reset background music
+
+                if (!res) {
+                    const gameOverSound = document.getElementById('gameOversound');
+                    gameOverSound.play();
+                } else {
+                    victoryMusic.play(); // Play victory music when won
+                }
+            }
+
+            function playJumpSound() {
+                jumpSound.play(); // Play jump sound when td is clicked
+            }
+
+            function rnd(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min
+            }
+        </script>
+    </body>
+</html>
