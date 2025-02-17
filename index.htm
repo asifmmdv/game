@@ -25,16 +25,41 @@
             const startButton = document.getElementById('startButton')
             const backgroundMusic = document.getElementById('backgroundMusic')
             const victoryMusic = document.getElementById('victory')
-            const jumpSound = document.getElementById('jump')
             let arr = []
             let kod = ''
             let sira = 1
             let count = 15
             let timer = null
             let gameStarted = false
-
+            let jumpSoundBuffer = null
+        
+            // Load the jump sound using Web Audio API
+            function loadJumpSound() {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                fetch('./music/Mario Jump - Sound Effect (HD).mp3')
+                    .then(response => response.arrayBuffer())
+                    .then(data => audioContext.decodeAudioData(data))
+                    .then(buffer => {
+                        jumpSoundBuffer = buffer;
+                    });
+            }
+        
+            // Play the jump sound using Web Audio API
+            function playJumpSound() {
+                if (!jumpSoundBuffer) return;
+        
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioContext.createBufferSource();
+                source.buffer = jumpSoundBuffer;
+                source.connect(audioContext.destination);
+                source.start(0);
+            }
+        
+            // Preload the jump sound when the page loads
+            loadJumpSound();
+        
             for (let i = 1; i <= 16; i++) arr.push(i)
-
+        
             for (let i = 1; i <= 4; i++) {
                 kod += '<tr>'
                 for (let j = 1; j <= 4; j++) {
@@ -45,7 +70,7 @@
                 kod += '</tr>'
             }
             oyun.innerHTML = kod
-
+        
             startButton.addEventListener('click', () => {
                 if (!gameStarted) {
                     timer = setInterval(counter, 1000)
@@ -54,12 +79,12 @@
                     startButton.disabled = true
                 }
             })
-
+        
             function counter() {
                 h1.innerHTML = count--
                 if (count < 0) gameOver(false)
             }
-
+        
             function boz(cell) {
                 if (!gameStarted) return 
                 if (parseInt(cell.dataset.number) === sira) {
@@ -69,14 +94,14 @@
                 }
                 if (sira > 16) gameOver(true)
             }
-
+        
             function gameOver(res) {
                 clearInterval(timer)
                 gameStarted = false
                 h1.innerHTML = res ? 'You Won &#128525;' : 'Game Over  &#128557;'
                 backgroundMusic.pause()
                 backgroundMusic.currentTime = 0; // Reset background music
-
+        
                 if (!res) {
                     const gameOverSound = document.getElementById('gameOversound');
                     gameOverSound.play();
@@ -84,11 +109,7 @@
                     victoryMusic.play(); // Play victory music when won
                 }
             }
-
-            function playJumpSound() {
-                jumpSound.play(); // Play jump sound when td is clicked
-            }
-
+        
             function rnd(min, max) {
                 return Math.floor(Math.random() * (max - min + 1)) + min
             }
